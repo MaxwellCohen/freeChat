@@ -9,127 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as FreechatRouteImport } from './routes/freechat'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ChatStoreRouteImport } from './routes/chat/store'
-import { Route as ChatStartServerFuncsRouteImport } from './routes/chat/start.server-funcs'
-import { Route as ChatStartApiRequestRouteImport } from './routes/chat/start.api-request'
-import { Route as ChatSentryTestingRouteImport } from './routes/chat/sentry.testing'
-import { Route as ChatApiTanchatRouteImport } from './routes/chat/api.tanchat'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
-const FreechatRoute = FreechatRouteImport.update({
-  id: '/freechat',
-  path: '/freechat',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChatStoreRoute = ChatStoreRouteImport.update({
-  id: '/chat/store',
-  path: '/chat/store',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatStartServerFuncsRoute = ChatStartServerFuncsRouteImport.update({
-  id: '/chat/start/server-funcs',
-  path: '/chat/start/server-funcs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatStartApiRequestRoute = ChatStartApiRequestRouteImport.update({
-  id: '/chat/start/api-request',
-  path: '/chat/start/api-request',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatSentryTestingRoute = ChatSentryTestingRouteImport.update({
-  id: '/chat/sentry/testing',
-  path: '/chat/sentry/testing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatApiTanchatRoute = ChatApiTanchatRouteImport.update({
-  id: '/chat/api/tanchat',
-  path: '/chat/api/tanchat',
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/freechat': typeof FreechatRoute
-  '/chat/store': typeof ChatStoreRoute
-  '/chat/api/tanchat': typeof ChatApiTanchatRoute
-  '/chat/sentry/testing': typeof ChatSentryTestingRoute
-  '/chat/start/api-request': typeof ChatStartApiRequestRoute
-  '/chat/start/server-funcs': typeof ChatStartServerFuncsRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/freechat': typeof FreechatRoute
-  '/chat/store': typeof ChatStoreRoute
-  '/chat/api/tanchat': typeof ChatApiTanchatRoute
-  '/chat/sentry/testing': typeof ChatSentryTestingRoute
-  '/chat/start/api-request': typeof ChatStartApiRequestRoute
-  '/chat/start/server-funcs': typeof ChatStartServerFuncsRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/freechat': typeof FreechatRoute
-  '/chat/store': typeof ChatStoreRoute
-  '/chat/api/tanchat': typeof ChatApiTanchatRoute
-  '/chat/sentry/testing': typeof ChatSentryTestingRoute
-  '/chat/start/api-request': typeof ChatStartApiRequestRoute
-  '/chat/start/server-funcs': typeof ChatStartServerFuncsRoute
+  '/api/chat': typeof ApiChatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/freechat'
-    | '/chat/store'
-    | '/chat/api/tanchat'
-    | '/chat/sentry/testing'
-    | '/chat/start/api-request'
-    | '/chat/start/server-funcs'
+  fullPaths: '/' | '/api/chat'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/freechat'
-    | '/chat/store'
-    | '/chat/api/tanchat'
-    | '/chat/sentry/testing'
-    | '/chat/start/api-request'
-    | '/chat/start/server-funcs'
-  id:
-    | '__root__'
-    | '/'
-    | '/freechat'
-    | '/chat/store'
-    | '/chat/api/tanchat'
-    | '/chat/sentry/testing'
-    | '/chat/start/api-request'
-    | '/chat/start/server-funcs'
+  to: '/' | '/api/chat'
+  id: '__root__' | '/' | '/api/chat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  FreechatRoute: typeof FreechatRoute
-  ChatStoreRoute: typeof ChatStoreRoute
-  ChatApiTanchatRoute: typeof ChatApiTanchatRoute
-  ChatSentryTestingRoute: typeof ChatSentryTestingRoute
-  ChatStartApiRequestRoute: typeof ChatStartApiRequestRoute
-  ChatStartServerFuncsRoute: typeof ChatStartServerFuncsRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/freechat': {
-      id: '/freechat'
-      path: '/freechat'
-      fullPath: '/freechat'
-      preLoaderRoute: typeof FreechatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -137,39 +58,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/chat/store': {
-      id: '/chat/store'
-      path: '/chat/store'
-      fullPath: '/chat/store'
-      preLoaderRoute: typeof ChatStoreRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/start/server-funcs': {
-      id: '/chat/start/server-funcs'
-      path: '/chat/start/server-funcs'
-      fullPath: '/chat/start/server-funcs'
-      preLoaderRoute: typeof ChatStartServerFuncsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/start/api-request': {
-      id: '/chat/start/api-request'
-      path: '/chat/start/api-request'
-      fullPath: '/chat/start/api-request'
-      preLoaderRoute: typeof ChatStartApiRequestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/sentry/testing': {
-      id: '/chat/sentry/testing'
-      path: '/chat/sentry/testing'
-      fullPath: '/chat/sentry/testing'
-      preLoaderRoute: typeof ChatSentryTestingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat/api/tanchat': {
-      id: '/chat/api/tanchat'
-      path: '/chat/api/tanchat'
-      fullPath: '/chat/api/tanchat'
-      preLoaderRoute: typeof ChatApiTanchatRouteImport
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -177,12 +70,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  FreechatRoute: FreechatRoute,
-  ChatStoreRoute: ChatStoreRoute,
-  ChatApiTanchatRoute: ChatApiTanchatRoute,
-  ChatSentryTestingRoute: ChatSentryTestingRoute,
-  ChatStartApiRequestRoute: ChatStartApiRequestRoute,
-  ChatStartServerFuncsRoute: ChatStartServerFuncsRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
