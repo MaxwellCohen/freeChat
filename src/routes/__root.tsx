@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 
 import appCss from "../styles.css?url";
 import clsx from "clsx";
+import { useState } from "react";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -33,13 +34,14 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   return (
     <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
       <body>
-        <SidebarProvider>
+        <SidebarProvider open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
           <AppSidebar />
           <main
             className={clsx("border-2 rounded-md w-full h-full min-h-screen")}

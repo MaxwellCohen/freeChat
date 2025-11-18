@@ -12,7 +12,7 @@ export function AppSidebar() {
       <SidebarHeader />
       <SidebarContent>
         <SidebarGroup >
-            hi
+            
         </SidebarGroup>
         <SidebarGroup />
       </SidebarContent>
