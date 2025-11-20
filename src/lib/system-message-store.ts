@@ -1,12 +1,8 @@
 import { Derived, Store } from '@tanstack/store'
 
 export const systemMessageStore = new Store({
-  currentSystemMessage: 'Default Assistant',
+  currentSystemMessage: '',
   savedSystemMessages: [
-    {
-      name: 'Default Assistant',
-      systemMessage: 'You are a helpful assistant. Return data in markdown format.',
-    },
     {
       name: 'Tailwind CSS Assistant',
       systemMessage: 'You are a helpful assistant and Tailwind CSS expert. You will be given css code and you will return the Tailwind CSS classes v4 that match the css code. Return data in markdown format.',
@@ -15,7 +11,7 @@ export const systemMessageStore = new Store({
 })
 
 export const currentSystemMessage = new Derived({
-  fn: () => systemMessageStore.state.savedSystemMessages.find((message) => message.name === systemMessageStore.state.currentSystemMessage)?.systemMessage || systemMessageStore.state.savedSystemMessages[0].systemMessage,
+  fn: () => systemMessageStore.state.savedSystemMessages.find((message) => message.name === systemMessageStore.state.currentSystemMessage)?.systemMessage || '',
   deps: [systemMessageStore],
 })
 
@@ -35,6 +31,7 @@ const loadFromLocalStorage = () => {
   
   const saved = localStorage.getItem('systemMessages');
   if (saved) {
+    console.log('loaded system messages', JSON.parse(saved));
     systemMessageStore.setState(JSON.parse(saved));
   }
 };

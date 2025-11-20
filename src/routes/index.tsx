@@ -1,6 +1,6 @@
 "use client";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import clsx from "clsx";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
@@ -36,52 +37,31 @@ import { useStore } from "@tanstack/react-store";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Info, Settings } from "lucide-react";
-import { createServerFn } from '@tanstack/react-start'
 import { useQuery } from "@tanstack/react-query";
-
-const loadModels = createServerFn({method: "GET"}).handler( async () => {
-  "use server";
-  const url =
-    "https://openrouter.ai/api/v1/models?max_price=0&order=latency-low-to-high";
-  const options = {
-    method: "GET",
-    headers: { Authorization: `Bearer ${process.env.OPEN_ROUTER_API_KEY}` },
-  };
-  try {
-    const response = await fetch(url, options);
-    const data = await response.json();
-    if (!Array.isArray(data?.data)) {
-      return [];
-    }
-    return data.data.filter((model: Model) => {
-      const price = new Set(Object.values(model.pricing));
-      if (price.size !== 1) {
-        return false;
-      }
-      return +[...price][0] === 0;
-    }) as Array<Model>;
-  } catch (error) {
-    console.error(error);
-  }
-})
+import { loadModels } from "../lib/loadModels";
 
 export const Route = createFileRoute("/")({
   component: App,
-  loader: async () =>  loadModels()
 });
 
 function App() {
-  const data = Route.useLoaderData();
-  
   const [selectedModelIndex, setSelectedModelIndex] = useState("0");
   const systemMessage = useStore(currentSystemMessage);
   const store = useStore(systemMessageStore);
+  const {data, isLoading} = useQuery({
+    queryKey: ["models"],
+    queryFn: loadModels,
+  })
   const model = data?.[Number(selectedModelIndex)];
-  const modelID = model?.id || "";
   console.log(model);
-  if (!model) {
-    return null;
+  if ( isLoading) {
+    return <div>Loading Page</div>;
   }
+  
+  if (!model) {
+    return <div>Error Loading Model</div>;
+  }
+  const modelID = model?.id || "";
   return (
     <div
       className={clsx(
@@ -166,17 +146,17 @@ function App() {
           <SettingsModel />
           <div> {store.currentSystemMessage}</div>
         </div>
-    
-      <ChatForm modelId={modelID} key={`${systemMessage}${modelID}`} systemMessage={systemMessage} />
+  
+      <ChatForm model={model} key={`${systemMessage}${modelID}`} systemMessage={systemMessage} />
     </div>
   );
 }
 
 function SettingsModel() {
-  const systemMessage = useStore(currentSystemMessage);
   const systemMessageStoreState = useStore(systemMessageStore);
+  const systemMessage = useStore(currentSystemMessage);
   const [systemMessageState, setSystemMessageState] = useState({
-    name: systemMessageStoreState.currentSystemMessage,
+    name: '',
     systemMessage: systemMessage,
   });
 
@@ -185,7 +165,16 @@ function SettingsModel() {
       (message) => message.name === name
     );
   }
+  useEffect(() => {
+    if(systemMessage !==  systemMessageState.systemMessage) {
+      setSystemMessageState({
+        name: systemMessage,
+        systemMessage: systemMessage,
+      });
+    }
+  }, [systemMessage]);
 
+  console.log(systemMessageStoreState);
   return (
     <Dialog>
       <DialogTrigger
@@ -195,20 +184,13 @@ function SettingsModel() {
         <span className="sr-only">Settings </span>
       </DialogTrigger>
       <DialogContent>
+        <DialogTitle>System Message Settings</DialogTitle>
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            const name = (
-              e.currentTarget.elements.namedItem(
-                "systemMessageName"
-              ) as HTMLInputElement
-            ).value.trim();
-            const content = (
-              e.currentTarget.elements.namedItem(
-                "systemMessage"
-              ) as HTMLTextAreaElement
-            ).value.trim();
-            if (!name) return;
+            const formData = new FormData(e.currentTarget);
+            const name = (formData.get("systemMessageName") as string).trim();
+            const content = (formData.get("systemMessage") as string).trim();
             const existing = findSystemMessage(name);
             systemMessageStore.setState((prev) => ({
               savedSystemMessages: existing
@@ -221,7 +203,7 @@ function SettingsModel() {
                     ...prev.savedSystemMessages,
                     { name, systemMessage: content },
                   ],
-              currentSystemMessage: name,
+              currentSystemMessage: name || '',
             }));
           }}
           className="flex flex-col gap-2"
@@ -261,11 +243,11 @@ function SettingsModel() {
               value={systemMessageState.name}
               onChange={(e) => {
                 const value = e.target.value;
-                setSystemMessageState((prev) => ({
+                setSystemMessageState(() => ({
                   name: value,
                   systemMessage:
                     findSystemMessage(value)?.systemMessage ||
-                    prev.systemMessage,
+                    '',
                 }));
               }}
               placeholder="e.g. Helpful Assistant"
@@ -296,7 +278,7 @@ function SettingsModel() {
             placeholder="You are a helpful assistant…"
             required
           />
-          <div className="grid grid-cols-[1fr_2fr] gap-2">
+          <div className="grid grid-cols-[1fr_1fr_2fr] gap-2">
             <Button
               type="button"
               variant="destructive"
@@ -322,6 +304,12 @@ function SettingsModel() {
               Delete
             </Button>
             <DialogClose asChild>
+              <Button type="button" onClick={() => systemMessageStore.setState((prev) => ({
+                currentSystemMessage: '',
+                savedSystemMessages: prev.savedSystemMessages,
+              }))}>Clear</Button>
+            </DialogClose>
+            <DialogClose asChild>
               <Button type="submit">Save</Button>
             </DialogClose>
           </div>
@@ -332,31 +320,26 @@ function SettingsModel() {
 }
 
 function ChatForm({
-  modelId,
+  model,
   systemMessage,
 }: {
-  modelId: string;
+  model: Model;
   systemMessage: string;
 }) {
   const [messageText, setMessageText] = useState("");
-  
-
   const chat = useChat({
     transport: new DefaultChatTransport({
       body: {
-        model: modelId,
+        model: model.id,
       },
     }),
-    onFinish: (...args) => {
-      console.log('finished message', ...args);
-    },
-    messages: [
+    messages: systemMessage ? [
       {
         id: "1",
         role: "system" as const,
         parts: [{ type: "text", text: systemMessage }],
       },
-    ] as UIMessage<unknown, any, any>[] 
+    ] as UIMessage<unknown, any, any>[] : undefined
   });
   const { messages, sendMessage, status, error, regenerate } = chat;
   console.log(chat);
@@ -417,21 +400,23 @@ function ChatForm({
                 );
               }
               if (part.type === "data-usage" && part.data) {
+                const data = part.data;
                 return (
                   <div className={clsx("border w-fit rounded-md p-2 my-2", {})}>
                     <details>
                       <summary>Usage Data</summary>
-                      <pre>{JSON.stringify(part.data, null, 2)}</pre>
+                      <div className="flex flex-row justify-between gap-4">
+                        <div>Input Tokens: {data.inputTokens}</div>
+                        <div>Completion Tokens: {data.outputTokens}</div>
+                        <div>Total Tokens: {data.totalTokens}</div>
+                        <div>Used Context Percentage: {(data.totalTokens / (model as any).context_length * 100).toFixed(2)}%</div>
+                        <div>Duration: {data.duration} ms</div>
+                      </div>
                     </details>
                   </div>
                 );
               }
-              return (
-                <details>
-                  <summary>Message</summary>
-                  <pre>{JSON.stringify(message, null, 2)}</pre>
-                </details>
-              );
+              return null;
             })}
           </div>
         )})}

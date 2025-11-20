@@ -3,10 +3,14 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createQueryClient } from "@/lib/query-client";
 
 import appCss from "../styles.css?url";
 import clsx from "clsx";
 import { useState } from "react";
+
+const queryClient = createQueryClient();
 
 export const Route = createRootRoute({
   head: () => ({
@@ -41,26 +45,28 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <SidebarProvider open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-          <AppSidebar />
-          <main
-            className={clsx("border-2 rounded-md w-full h-full min-h-screen")}
-          >
-            {children}
-          </main>
-          <TanStackDevtools
-            config={{
-              position: "bottom-right",
-            }}
-            plugins={[
-              {
-                name: "Tanstack Router",
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
-          <Scripts />
-        </SidebarProvider>
+        <QueryClientProvider client={queryClient}>
+          <SidebarProvider open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+            <AppSidebar />
+            <main
+              className={clsx("border-2 rounded-md w-full h-full min-h-screen")}
+            >
+              {children}
+            </main>
+            <TanStackDevtools
+              config={{
+                position: "bottom-right",
+              }}
+              plugins={[
+                {
+                  name: "Tanstack Router",
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
+            <Scripts />
+          </SidebarProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );
