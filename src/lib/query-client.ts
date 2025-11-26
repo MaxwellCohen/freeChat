@@ -5,7 +5,7 @@
 	  new QueryClient({
 	    defaultOptions: {
 	      queries: {
-	        staleTime: 1000 * 60 * 60, // 1 hour
+	        staleTime: 3600000, // 1 hour
 	      },
 	    },
 	  })

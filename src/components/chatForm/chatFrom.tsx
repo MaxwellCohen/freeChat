@@ -8,6 +8,7 @@ import { DefaultChatTransport, UIMessage } from "ai";
 import { Streamdown } from "streamdown";
 
 import { Model } from "@openrouter/sdk/models/model";
+import { useNonRefreshingQuery } from "@/hooks/useNonRefreshingQuery";
 export function ChatForm({
   model,
   systemMessage,
@@ -16,6 +17,26 @@ export function ChatForm({
   systemMessage: string;
 }) {
   const [messageText, setMessageText] = useState("");
+  const [firstMessage, setFirstMessage] = useState("");
+  const { data: title, isLoading } = useNonRefreshingQuery(
+    ["title", firstMessage],
+    async () => {
+      const res = await fetch("/api/title", {
+        method: "POST",
+        body: JSON.stringify({
+          message: firstMessage,
+          model: model.id,
+        }),
+      });
+      if (!res.ok) {
+        return "";
+      }
+      const data = await res.json();
+      return data.title || "";
+    },
+    !!firstMessage
+  );
+
   const chat = useChat({
     transport: new DefaultChatTransport({
       body: {
@@ -37,6 +58,9 @@ export function ChatForm({
   return (
     <>
       <div className={clsx("flex flex-col overflow-y-auto")}>
+        <h2 className={clsx("px-4 py-2 font-semibold text-lg")}>
+          {title ? title : "New Chat"} {isLoading ? "loading" : ''}
+        </h2>
         {messages.map((message) => {
           if (message.role === "system") {
             return (
@@ -140,12 +164,19 @@ export function ChatForm({
       </div>
       <form
         className={clsx(
-          "flex flex-col items-center justify-between gap-4 flex-wrap border border-gray-700",
+          "flex flex-col items-center justify-between gap-4 flex-wrap border border-gray-700"
         )}
         onSubmit={(e) => {
           e.preventDefault();
-          if (messageText.trim()) {
-            sendMessage({ text: messageText });
+          const cleanMessageText = messageText.trim();
+          if (cleanMessageText) {
+            const userMessageCount = messages.filter(
+              (m) => m.role === "user"
+            ).length;
+            if (userMessageCount === 0) {
+              setFirstMessage(cleanMessageText);
+            }
+            sendMessage({ text: cleanMessageText });
             setMessageText("");
           }
         }}

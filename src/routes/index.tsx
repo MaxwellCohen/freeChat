@@ -26,7 +26,7 @@ import { Info } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { loadModels } from "../lib/loadModels";
 import { ChatForm } from "@/components/chatForm/chatFrom";
-import { SettingsModel } from "./settings-model";
+import { SettingsModel } from "../components/settings-model";
 
 export const Route = createFileRoute("/")({
   component: App,
