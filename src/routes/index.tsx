@@ -39,6 +39,7 @@ import { Input } from "@/components/ui/input";
 import { Info, Settings } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { loadModels } from "../lib/loadModels";
+import { ChatForm } from "@/components/chatForm/chatFrom";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -48,16 +49,16 @@ function App() {
   const [selectedModelIndex, setSelectedModelIndex] = useState("0");
   const systemMessage = useStore(currentSystemMessage);
   const store = useStore(systemMessageStore);
-  const {data, isLoading} = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["models"],
     queryFn: loadModels,
-  })
+  });
   const model = data?.[Number(selectedModelIndex)];
   console.log(model);
-  if ( isLoading) {
+  if (isLoading) {
     return <div>Loading Page</div>;
   }
-  
+
   if (!model) {
     return <div>Error Loading Model</div>;
   }
@@ -65,89 +66,97 @@ function App() {
   return (
     <div
       className={clsx(
-        "grid grid-cols-1 border border-gray-700 rounded-md grid-rows-[auto_1fr_auto] h-screen"
+        "grid grid-cols-1 border border-gray-700 rounded-md grid-rows-[auto_1fr_auto] h-screen",
       )}
     >
       <div
         className={clsx(
-          "flex flex-row items-center gap-4 flex-wrap border border-gray-700"
+          "flex flex-row items-center gap-4 flex-wrap border border-gray-700",
         )}
       >
         <SidebarTrigger className="shrink-0" />
-          <div className="contents">
-            <label htmlFor="modelSelect">Model:</label>
-            <Select
-              onValueChange={setSelectedModelIndex}
-              value={selectedModelIndex}
-            >
-              <SelectTrigger id="modelSelect" className="field-sizing-content">
-                <SelectValue placeholder="Select a model" />
-              </SelectTrigger>
-              <SelectContent>
-                {data?.map((model, index) => (
-                  <SelectItem key={model.id} value={`${index}`}>
-                    {model.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Popover>
-            <PopoverTrigger
-              className={buttonVariants({ variant: "ghost", size: "icon", className: "size-7" })}
-            >
-              <Info className="inline-block w-4 h-4" />
-              <span className="sr-only">Model Info </span>
-            </PopoverTrigger>
-            <PopoverContent className="w-[calc(var(--radix-popper-available-width)*.75)] h-[500px] overflow-auto">
-              <div>
-                <span className="font-bold">Model ID: </span>
-                {model.id}
-              </div>
-
-              <div>
-                <span className="font-bold">Model Name: </span>
-                {model.name}
-              </div>
-              <div>
-                <span className="font-bold">Context: </span>
-                {
-                  // @ts-expect-error
-                  model.context_length
-                }
-              </div>
-              <div>
-                <span className="font-bold">Created: </span>
-                {new Date(model.created * 1000).toLocaleDateString()}
-              </div>
-              <div>
-                <span className="font-bold">Model Input Modalities: </span>
-                {
-                  // @ts-expect-error
-                  model.architecture.input_modalities.join(", ")
-                }
-              </div>
-              <div>
-                <span className="font-bold">Model Output Modalities: </span>
-                {
-                  // @ts-expect-error
-                  model.architecture.output_modalities.join(", ")
-                }
-              </div>
-              <div>
-                {model?.description}
-
-                <pre className="h-500 overflow-auto">
-                  {JSON.stringify(model, null, 2)}
-                </pre>
-              </div>
-            </PopoverContent>
-          </Popover>
-          <SettingsModel />
-          <div> {store.currentSystemMessage}</div>
+        <div className="contents">
+          <label htmlFor="modelSelect">Model:</label>
+          <Select
+            onValueChange={setSelectedModelIndex}
+            value={selectedModelIndex}
+          >
+            <SelectTrigger id="modelSelect" className="field-sizing-content">
+              <SelectValue placeholder="Select a model" />
+            </SelectTrigger>
+            <SelectContent>
+              {data?.map((model, index) => (
+                <SelectItem key={model.id} value={`${index}`}>
+                  {model.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-  
-      <ChatForm model={model} key={`${systemMessage}${modelID}`} systemMessage={systemMessage} />
+        <Popover>
+          <PopoverTrigger
+            className={buttonVariants({
+              variant: "ghost",
+              size: "icon",
+              className: "size-7",
+            })}
+          >
+            <Info className="inline-block w-4 h-4" />
+            <span className="sr-only">Model Info </span>
+          </PopoverTrigger>
+          <PopoverContent className="w-[calc(var(--radix-popper-available-width)*.75)] h-[500px] overflow-auto">
+            <div>
+              <span className="font-bold">Model ID: </span>
+              {model.id}
+            </div>
+
+            <div>
+              <span className="font-bold">Model Name: </span>
+              {model.name}
+            </div>
+            <div>
+              <span className="font-bold">Context: </span>
+              {
+                // @ts-expect-error
+                model.context_length
+              }
+            </div>
+            <div>
+              <span className="font-bold">Created: </span>
+              {new Date(model.created * 1000).toLocaleDateString()}
+            </div>
+            <div>
+              <span className="font-bold">Model Input Modalities: </span>
+              {
+                // @ts-expect-error
+                model.architecture.input_modalities.join(", ")
+              }
+            </div>
+            <div>
+              <span className="font-bold">Model Output Modalities: </span>
+              {
+                // @ts-expect-error
+                model.architecture.output_modalities.join(", ")
+              }
+            </div>
+            <div>
+              {model?.description}
+
+              <pre className="h-500 overflow-auto">
+                {JSON.stringify(model, null, 2)}
+              </pre>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <SettingsModel />
+        <div> {store.currentSystemMessage}</div>
+      </div>
+
+      <ChatForm
+        model={model}
+        key={`${systemMessage}${modelID}`}
+        systemMessage={systemMessage}
+      />
     </div>
   );
 }
@@ -156,17 +165,17 @@ function SettingsModel() {
   const systemMessageStoreState = useStore(systemMessageStore);
   const systemMessage = useStore(currentSystemMessage);
   const [systemMessageState, setSystemMessageState] = useState({
-    name: '',
+    name: "",
     systemMessage: systemMessage,
   });
 
   function findSystemMessage(name: string) {
     return systemMessageStoreState.savedSystemMessages.find(
-      (message) => message.name === name
+      (message) => message.name === name,
     );
   }
   useEffect(() => {
-    if(systemMessage !==  systemMessageState.systemMessage) {
+    if (systemMessage !== systemMessageState.systemMessage) {
       setSystemMessageState({
         name: systemMessage,
         systemMessage: systemMessage,
@@ -197,13 +206,13 @@ function SettingsModel() {
                 ? prev.savedSystemMessages.map((message) =>
                     message.name === name
                       ? { ...message, systemMessage: content }
-                      : message
+                      : message,
                   )
                 : [
                     ...prev.savedSystemMessages,
                     { name, systemMessage: content },
                   ],
-              currentSystemMessage: name || '',
+              currentSystemMessage: name || "",
             }));
           }}
           className="flex flex-col gap-2"
@@ -245,9 +254,7 @@ function SettingsModel() {
                 const value = e.target.value;
                 setSystemMessageState(() => ({
                   name: value,
-                  systemMessage:
-                    findSystemMessage(value)?.systemMessage ||
-                    '',
+                  systemMessage: findSystemMessage(value)?.systemMessage || "",
                 }));
               }}
               placeholder="e.g. Helpful Assistant"
@@ -285,12 +292,12 @@ function SettingsModel() {
               onClick={() => {
                 if (
                   window.confirm(
-                    `Are you sure you want to delete “${systemMessageState.name}”?`
+                    `Are you sure you want to delete “${systemMessageState.name}”?`,
                   )
                 ) {
                   systemMessageStore.setState((prev) => ({
                     savedSystemMessages: prev.savedSystemMessages.filter(
-                      (msg) => msg.name !== systemMessageState.name
+                      (msg) => msg.name !== systemMessageState.name,
                     ),
                     currentSystemMessage:
                       prev.currentSystemMessage === systemMessageState.name
@@ -304,10 +311,17 @@ function SettingsModel() {
               Delete
             </Button>
             <DialogClose asChild>
-              <Button type="button" onClick={() => systemMessageStore.setState((prev) => ({
-                currentSystemMessage: '',
-                savedSystemMessages: prev.savedSystemMessages,
-              }))}>Clear</Button>
+              <Button
+                type="button"
+                onClick={() =>
+                  systemMessageStore.setState((prev) => ({
+                    currentSystemMessage: "",
+                    savedSystemMessages: prev.savedSystemMessages,
+                  }))
+                }
+              >
+                Clear
+              </Button>
             </DialogClose>
             <DialogClose asChild>
               <Button type="submit">Save</Button>
@@ -316,149 +330,5 @@ function SettingsModel() {
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function ChatForm({
-  model,
-  systemMessage,
-}: {
-  model: Model;
-  systemMessage: string;
-}) {
-  const [messageText, setMessageText] = useState("");
-  const chat = useChat({
-    transport: new DefaultChatTransport({
-      body: {
-        model: model.id,
-      },
-    }),
-    messages: systemMessage ? [
-      {
-        id: "1",
-        role: "system" as const,
-        parts: [{ type: "text", text: systemMessage }],
-      },
-    ] as UIMessage<unknown, any, any>[] : undefined
-  });
-  const { messages, sendMessage, status, error, regenerate } = chat;
-  console.log(chat);
-  return (
-    <>
-      <div className={clsx("flex flex-col overflow-y-auto")}>
-        {messages.map((message) => {
-          if (message.role === "system") {
-            return <details>
-              <summary>System Message</summary>
-              {message.parts.map((part, index) => {
-                if (part.type === "text" && part.text) {
-                  return (
-                    <div
-                      className={clsx("border w-fit rounded-md p-2", {
-                        "border-muted-foreground": message.role === "user",
-                        "border-accent-foreground": message.role === "assistant",
-                      })}
-                    >
-                      <Streamdown
-                        isAnimating={status === "streaming"}
-                        key={index}
-                      >
-                        {part.text}
-                      </Streamdown>
-                    </div>
-                  );
-                }
-                return null;
-              })}
-            </details>;
-          }
-
-
-          return(<div
-            key={message.id}
-            className={clsx("px-4 my-2", {
-              "text-right self-end": message.role === "user",
-              "text-left": message.role === "assistant",
-            })}
-          >
-            {message.parts.map((part, index) => {
-              if (part.type === "text" && part.text) {
-                return (
-                  <div
-                    className={clsx("border w-fit rounded-md p-2", {
-                      "border-muted-foreground": message.role === "user",
-                      "border-accent-foreground": message.role === "assistant",
-                    })}
-                  >
-                    <Streamdown
-                      isAnimating={status === "streaming"}
-                      key={index}
-                    >
-                      {part.text}
-                    </Streamdown>
-                  </div>
-                );
-              }
-              if (part.type === "data-usage" && part.data) {
-                const data = part.data;
-                return (
-                  <div className={clsx("border w-fit rounded-md p-2 my-2", {})}>
-                    <details>
-                      <summary>Usage Data</summary>
-                      <div className="flex flex-row justify-between gap-4">
-                        <div>Input Tokens: {data.inputTokens}</div>
-                        <div>Completion Tokens: {data.outputTokens}</div>
-                        <div>Total Tokens: {data.totalTokens}</div>
-                        <div>Used Context Percentage: {(data.totalTokens / (model as any).context_length * 100).toFixed(2)}%</div>
-                        <div>Duration: {data.duration} ms</div>
-                      </div>
-                    </details>
-                  </div>
-                );
-              }
-              return null;
-            })}
-          </div>
-        )})}
-        {status === "submitted" && <div>Please Wait...</div>}
-        {status === "streaming" && <div>Getting data...</div>}
-        {error && (
-          <>
-            <div>An error occurred.</div>
-            <div>{error.message}</div>
-            <button type="button" onClick={() => regenerate()}>
-              Retry
-            </button>
-          </>
-        )}
-      </div>
-      <form
-        className={clsx(
-          "flex flex-col items-center justify-between gap-4 flex-wrap border border-gray-700"
-        )}
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (messageText.trim()) {
-            sendMessage({ text: messageText });
-            setMessageText("");
-          }
-        }}
-      >
-        <Textarea
-          value={messageText}
-          onChange={(e) => setMessageText(e.target.value)}
-          disabled={status !== "ready"}
-          placeholder="Say something..."
-          className={clsx("flex-1")}
-        />
-        <Button
-          className={clsx("rounded-full")}
-          type="submit"
-          disabled={status !== "ready"}
-        >
-          send
-        </Button>
-      </form>
-    </>
   );
 }
